@@ -1,0 +1,7 @@
+{
+"dir_data_raw": "../data/raw",
+"dir_data_input": "../data/input",
+"db_url": "cluster0.egjki.mongodb.net",
+"db_name": "gmam",
+"db_user": "getmeamovie_rw"
+}

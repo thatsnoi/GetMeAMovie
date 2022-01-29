@@ -1,0 +1,60 @@
+name: Deploy API Staging
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        python-version: [3.8]
+        poetry-version: [1.1.11]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+      - name: Set up Poetry config
+        run: poetry config virtualenvs.in-project true
+      - name: Install project dependencies
+        run: poetry install
+      - name: Run tests
+        env:
+          DB_COLLECTION: ${{ secrets.DB_COLLECTION }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USER: ${{ secrets.DB_USER }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: poetry run pytest
+        
+  deploy-staging:
+    needs: [ci]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Deploy API to staging environment
+        uses: akhileshns/heroku-deploy@v3.12.12 
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.BACKEND_NAME_STAGING }}
+          heroku_email: ${{ secrets.EMAIL_MANTAINER }}
+          appdir: "backend"
+          branch: "development"
+          usedocker: true
+          stack: "container"
+

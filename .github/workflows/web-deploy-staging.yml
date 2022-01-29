@@ -1,0 +1,23 @@
+name: Deploy Web Staging
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Deploy web to staging environment
+        uses: akhileshns/heroku-deploy@v3.12.12 
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.WEB_NAME_STAGING }}
+          heroku_email: ${{ secrets.EMAIL_MANTAINER }}
+          appdir: "Frontend"
+          branch: "development"
+          buildpack: "https://github.com/mars/create-react-app-buildpack.git"
+
